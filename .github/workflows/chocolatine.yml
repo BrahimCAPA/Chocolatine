@@ -9,7 +9,7 @@ on:
       - "ga-ignore-*"
 
 env:
-  MIRROR_URL: git@github.com:EpitechPromo2027/B-DOP-200-NCE-2-1-chocolatine-brahim.caparros.git
+  MIRROR_URL: git@github.com:BrahimCAPA/Chocolatine.git
   EXECUTABLES:
 
 jobs:
