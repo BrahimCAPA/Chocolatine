@@ -28,35 +28,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-  check_coding-style:
-    needs: setup
+  jobs:
+  check_coding_style:
     runs-on: ubuntu-latest
-
     container:
       image: ghcr.io/epitech/coding-style-checker:latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Run coding style checker
-        id: coding_style_check
         run: |
-          echo "::set-output name=report::$(norminette 2>&1)"
-
-      - name: Display coding style errors as annotations
-        run: |
-          coding_style_errors="${{ steps.coding_style_check.outputs.report }}"
-          echo "$coding_style_errors"
-          IFS=$'\n'
-          for error in $coding_style_errors; do
-            echo "::error ::$error"
-          done
-
-      - name: Fail if there are coding style errors
-        run: |
-          coding_style_errors="${{ steps.coding_style_check.outputs.report }}"
-          if [[ ! -z "$coding_style_errors" ]]; then
+          checker_output=$(./check.sh $(pwd) $(pwd))
+          echo "$checker_output"
+          if [[ $checker_output =~ "coding style errors" ]]; then
+            echo "error: coding style errors detected"
             exit 1
           fi
 
