@@ -9,18 +9,14 @@ SRC		=	main.c \
 
 OBJ		=	$(SRC:.c=.o)
 
-CFLAGS		=	-Wall -Werror -Wextra -I./include -pedantic \
-			    -std=c99 -ggdb3 -Ofast
-
-LDFLAGS		=	-lm
+CFLAGS		=	-Wall -Werror -Wextra
 
 NAME		=	printf
 
 all :		$(NAME)
 
 $(NAME) :	$(OBJ)
-		$(CC) -o $(NAME) $(OBJ) $(LDFLAGS)
-		cp $(NAME)
+		$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
 
 clean :
 			rm -f $(OBJ)
