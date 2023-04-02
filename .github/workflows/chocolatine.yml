@@ -89,15 +89,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up SSH
-        env:
-          GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-        run: |
-          echo "$GIT_SSH_PRIVATE_KEY" > private_key
-          chmod 600 private_key
-          ssh-keyscan -t rsa "${{ env.MIRROR_URL }}" >> ~/.ssh/id_rsa.pub
+      - name: Setup SSH
+      run: |
+    mkdir -p ~/.ssh
+    echo "$GIT_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+    ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-      - name: Push to mirror repository
+
+  - name: Push to mirror repository
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
