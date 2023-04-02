@@ -28,7 +28,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-  jobs:
   check_coding_style:
     runs-on: ubuntu-latest
     container:
