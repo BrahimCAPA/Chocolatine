@@ -1,0 +1,133 @@
+name: Chocolatine
+
+on:
+  push:
+    branches-ignore:
+      - "ga-ignore-*"
+  pull_request:
+    branches-ignore:
+      - "ga-ignore-*"
+
+env:
+  MIRROR_URL: ${{ secrets.MIRROR_URL }}
+  EXECUTABLES: ${{ secrets.EXECUTABLES }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+  enforce-good-practices:
+    needs: setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+  check_coding-style:
+    needs: setup
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/epitech/coding-style-checker:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run coding style checker
+        id: coding_style_check
+        run: |
+          echo "::set-output name=report::$(norminette 2>&1)"
+
+      - name: Display coding style errors as annotations
+        run: |
+          coding_style_errors="${{ steps.coding_style_check.outputs.report }}"
+          echo "$coding_style_errors"
+          IFS=$'\n'
+          for error in $coding_style_errors; do
+            echo "::error ::$error"
+          done
+
+      - name: Fail if there are coding style errors
+        run: |
+          coding_style_errors="${{ steps.coding_style_check.outputs.report }}"
+          if [[ ! -z "$coding_style_errors" ]]; then
+            exit 1
+          fi
+
+  build-and-test:
+    needs: enforce-good-practices
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build and test
+        run: |
+          IFS=',' read -ra EXEC_ARRAY <<< "${{ env.EXECUTABLES }}"
+          for exec in "${EXEC_ARRAY[@]}"; do
+            exec_dir=$(dirname "$exec")
+            exec_name=$(basename "$exec")
+            cd $exec_dir
+            make $exec_name
+            # Run any required tests here
+            cd -
+          done
+
+  push_to_mirror:
+    if: github.event_name == 'push'
+    needs: check_program_compilation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        env:
+          GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+        run: |
+          echo "$GIT_SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          ssh-keyscan -t rsa "${{ env.MIRROR_URL }}" >> ~/.ssh/known_hosts
+
+      - name: Push to mirror repository
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git remote add mirror ${{ env.MIRROR_URL }}
+          GIT_SSH_COMMAND="ssh -i $(pwd)/private_key" git push --mirror mirror
+
+  check_program_compilation:
+    needs: setup
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Check program compilation
+        run: |
+          timeout --preserve-status 2m make
+
+      - name: Clean build artifacts
+        run: |
+          make clean
+
+      - name: Verify executables
+        run: |
+          IFS=',' read -ra EXEC_ARRAY <<< "${{ env.EXECUTABLES }}"
+          for exec in "${EXEC_ARRAY[@]}"; do
+            if [[ ! -x "$exec" ]]; then
+              echo "Error: $exec not found or not executable"
+              exit 1
+            fi
+          done
