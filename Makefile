@@ -14,7 +14,7 @@ CFLAGS		=	-Wall -Werror -Wextra -I./include -pedantic \
 
 LDFLAGS		=	-lm
 
-NAME		=	my_putstr
+NAME		=	printf
 
 all :		$(NAME)
 
