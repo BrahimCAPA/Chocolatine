@@ -1,27 +1,29 @@
 ##
-## EPITECH PROJECT, 2023
-## B-CPE-200-NCE-2-1-dante-nathan.de-bock [WSL : Ubuntu]
+## EPITECH PROJECT, 2022
+## delivery
 ## File description:
 ## Makefile
 ##
 
-SRC		=	main.c \
+OBJ     =     $(SRC:.c=.o)
 
-OBJ		=	$(SRC:.c=.o)
+SRC     =     main.c
 
-CFLAGS		=	-Wall -Werror -Wextra
+NAME    =    chocolatine
 
-NAME		=	printf
+all: $(NAME)
 
-all :		$(NAME)
+chocolatine: $(OBJ)
+        gcc $(OBJ) -o $(NAME)
 
-$(NAME) :	$(OBJ)
-		$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
+tests_run:
+    @printf    "All test completed."
 
-clean :
-			rm -f $(OBJ)
+clean:
+    rm -f $(OBJ)
+    rm -f *~
+    rm -f #~#
 
-fclean :	clean
-			rm -f $(NAME)
-
-re :		fclean all
+fclean: clean
+    rm -f $(OBJ) chocolatine
+re:     fclean all

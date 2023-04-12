@@ -9,8 +9,8 @@ on:
       - "ga-ignore-*"
 
 env:
-  MIRROR_URL: git@github.com:EpitechPromo2027/B-DOP-200-NCE-2-1-chocolatine-brahim.caparros.git
-  EXECUTABLES:
+  MIRROR_URL: git@github.com:BrahimCAPA/Chocolatine.git
+  EXECUTABLES: "chocolatine"
 
 jobs:
   setup:
@@ -35,15 +35,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Run coding style checker
+      - name: Check coding style
         run: |
-          checker_output=$(./check.sh $(pwd) $(pwd))
-          echo "$checker_output"
-          if [[ $checker_output =~ "coding style errors" ]]; then
-            echo "error: coding style errors detected"
-            exit 1
-          fi
+          check.sh $(pwd) $(pwd)
+        id: check_coding_style
 
   build-and-test:
     needs: enforce-good-practices
